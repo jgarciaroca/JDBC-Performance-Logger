@@ -54,6 +54,10 @@ public class StatementFullyExecutedLog {
         return statementLog.getTransactionIsolation();
     }
 
+    public String getCallerStackTrace() {
+        return statementLog.getCallerStackTrace();
+    }
+
     public String getRawSql() {
         return statementLog.getRawSql();
     }

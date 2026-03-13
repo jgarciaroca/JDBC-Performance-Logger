@@ -16,15 +16,22 @@ public class ConnectionInfo implements LogMessage {
      * Connection props without password
      */
     private final Properties connectionProperties;
+    private final String clientId;
 
     public ConnectionInfo(final UUID uuid, final int connectionNumber, final String url, final Date creationDate,
             final long connectionCreationDuration, final Properties connectionProperties) {
+        this(uuid, connectionNumber, url, creationDate, connectionCreationDuration, connectionProperties, "");
+    }
+
+    public ConnectionInfo(final UUID uuid, final int connectionNumber, final String url, final Date creationDate,
+            final long connectionCreationDuration, final Properties connectionProperties, final String clientId) {
         this.uuid = uuid;
         this.connectionNumber = connectionNumber;
         this.url = url;
         this.creationDate = creationDate;
         this.connectionCreationDuration = connectionCreationDuration;
         this.connectionProperties = connectionProperties;
+        this.clientId = clientId;
     }
 
     public UUID getUuid() {
@@ -49,6 +56,10 @@ public class ConnectionInfo implements LogMessage {
 
     public long getConnectionCreationDuration() {
         return connectionCreationDuration;
+    }
+
+    public String getClientId() {
+        return clientId;
     }
 
     @Override

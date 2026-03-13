@@ -24,5 +24,6 @@ public class LogRepositoryConstants {
     public static final String TOTAL_EXEC_PLUS_RSET_USAGE_TIME_COLUMN = "TOTAL_EXEC_PLUS_RSET_USAGE_TIME";
     public static final String TRANSACTION_ISOLATION_COLUMN = "TRANSACTION_ISOLATION";
     public static final String TSTAMP_COLUMN = "TSTAMP";
+    public static final String CLIENT_ID_COLUMN = "CLIENTID";
 
 }

@@ -31,9 +31,15 @@ public class AbstractBeforeStatementExecutionLog implements LogMessage {
     private final int timeout;
     private final boolean autoCommit;
     private final int transactionIsolation;
+    private final String callerStackTrace;
 
     public AbstractBeforeStatementExecutionLog(final UUID connectionId, final UUID logId, final long timestamp,
                                                final StatementType statementType, final String threadName, final int timeout, final boolean autoCommit, int transactionIsolation) {
+        this(connectionId, logId, timestamp, statementType, threadName, timeout, autoCommit, transactionIsolation, "");
+    }
+
+    public AbstractBeforeStatementExecutionLog(final UUID connectionId, final UUID logId, final long timestamp,
+                                               final StatementType statementType, final String threadName, final int timeout, final boolean autoCommit, int transactionIsolation, final String callerStackTrace) {
         connectionUuid = connectionId;
         this.logId = logId;
         this.timestamp = timestamp;
@@ -42,6 +48,7 @@ public class AbstractBeforeStatementExecutionLog implements LogMessage {
         this.timeout = timeout;
         this.autoCommit = autoCommit;
         this.transactionIsolation = transactionIsolation;
+        this.callerStackTrace = callerStackTrace;
     }
 
     public UUID getConnectionUuid() {
@@ -74,5 +81,9 @@ public class AbstractBeforeStatementExecutionLog implements LogMessage {
 
     public int getTransactionIsolation() {
         return transactionIsolation;
+    }
+
+    public String getCallerStackTrace() {
+        return callerStackTrace;
     }
 }

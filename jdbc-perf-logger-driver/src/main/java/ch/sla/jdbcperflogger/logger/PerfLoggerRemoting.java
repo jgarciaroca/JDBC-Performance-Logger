@@ -63,9 +63,10 @@ public class PerfLoggerRemoting {
 
     public static void connectionCreated(final LoggingConnectionInvocationHandler connectionHandler,
             final long connectionCreationDuration) {
+        final String clientId = System.getProperty("jdbcperflogger.client.id", "");
         final ConnectionInfo info = new ConnectionInfo(connectionHandler.getConnectionUuid(),
                 connectionHandler.getConnectionId(), connectionHandler.getUrl(), new Date(), connectionCreationDuration,
-                connectionHandler.getConnectionProperties());
+                connectionHandler.getConnectionProperties(), clientId);
         synchronized (connectionToInfo) {
             connectionToInfo.put(connectionHandler, info);
             postLog(info);

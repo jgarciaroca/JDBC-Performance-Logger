@@ -65,7 +65,7 @@ public class LogRepositoryReadJdbc implements LogRepositoryRead {
             final boolean withFilledSql) {
         final StringBuilder sql = new StringBuilder("select id, tstamp, statementType, rawSql, " //
                 + "exec_plus_rset_usage_time, execution_time, rset_usage_time, fetch_time, "//
-                + "nbRows, threadName, connectionNumber, timeout, autoCommit, transaction_Isolation, error ");
+                + "nbRows, threadName, connectionNumber, timeout, autoCommit, transaction_Isolation, error, clientId ");
         if (withFilledSql) {
             sql.append(", " + LogRepositoryConstants.FILLED_SQL_COLUMN);
         }
@@ -220,7 +220,8 @@ public class LogRepositoryReadJdbc implements LogRepositoryRead {
                 + "statement_log.threadName, statement_log.exception, "//
                 + "statement_log.connectionId,"//
                 + "connection_info.connectionNumber, connection_info.url, connection_info.creationDate,"//
-                + "connection_info.connectionCreationDurationNanos, connection_info.connectionProperties "//
+                + "connection_info.connectionCreationDurationNanos, connection_info.connectionProperties, "//
+                + "statement_log.callerStackTrace, connection_info.clientId "//
                 + "from statement_log join connection_info on (statement_log.connectionId=connection_info.connectionId) "//
                 + "where statement_log.id=?";
 
@@ -246,12 +247,14 @@ public class LogRepositoryReadJdbc implements LogRepositoryRead {
                     final Timestamp creationDate = resultSet.getTimestamp(i++);
                     final long connectionCreationDurationNanos = resultSet.getLong(i++);
                     final Properties connectionProperties = (Properties) resultSet.getObject(i++);
+                    final String callerStackTrace = resultSet.getString(i++);
+                    final String clientId = resultSet.getString(i++);
 
                     final ConnectionInfo connectionInfo = new ConnectionInfo(connectionId, connectionNumber,
-                            connectionUrl, creationDate, connectionCreationDurationNanos, connectionProperties);
+                            connectionUrl, creationDate, connectionCreationDurationNanos, connectionProperties, clientId != null ? clientId : "");
 
                     result = new DetailedViewStatementLog(logId, connectionInfo, tstamp.getTime(), statementType,
-                            rawSql, filledSql, threadName, exception);
+                            rawSql, filledSql, threadName, exception, callerStackTrace != null ? callerStackTrace : "");
                 }
                 return result;
             }

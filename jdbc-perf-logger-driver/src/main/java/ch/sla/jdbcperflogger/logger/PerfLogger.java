@@ -81,8 +81,9 @@ public class PerfLogger {
             LOGGER_ORIGINAL_SQL.debug("Before execution of non-prepared stmt " + logId + ": " + sql);
         }
         final long now = System.currentTimeMillis();
+        final String stackTrace = captureCallerStackTrace();
         PerfLoggerRemoting.postLog(new StatementLog(connectionId, logId, now, statementType, sql,
-                Thread.currentThread().getName(), timeout, autoCommit, transactionIsolation));
+                Thread.currentThread().getName(), timeout, autoCommit, transactionIsolation, stackTrace));
     }
 
     public static void logBeforePreparedStatement(final UUID connectionId, final UUID logId, final String rawSql,
@@ -96,8 +97,9 @@ public class PerfLogger {
             LOGGER_FILLED_SQL.debug("Before execution of prepared stmt " + logId + ": " + filledSql);
         }
         final long now = System.currentTimeMillis();
+        final String stackTrace = captureCallerStackTrace();
         PerfLoggerRemoting.postLog(new StatementLog(connectionId, logId, now, statementType, rawSql, filledSql,
-                Thread.currentThread().getName(), timeout, autoCommit, transactionIsolation));
+                Thread.currentThread().getName(), timeout, autoCommit, transactionIsolation, stackTrace));
     }
 
     public static void logNonPreparedBatchedStatements(final UUID connectionId, final UUID logId,
@@ -115,8 +117,9 @@ public class PerfLogger {
                 LOGGER_BATCHED_STATEMENTS_DETAIL.debug("#" + i + ": " + sql);
             }
         }
+        final String stackTrace = captureCallerStackTrace();
         PerfLoggerRemoting.postLog(new BatchedNonPreparedStatementsLog(connectionId, logId, now, batchedExecutions,
-                Thread.currentThread().getName(), timeout, autoCommit, transactionIsolation));
+                Thread.currentThread().getName(), timeout, autoCommit, transactionIsolation, stackTrace));
     }
 
     public static void logPreparedBatchedStatements(final UUID connectionId, final UUID logId, final String rawSql,
@@ -142,8 +145,9 @@ public class PerfLogger {
                 LOGGER_BATCHED_STATEMENTS_DETAIL.debug("#" + i + ": " + filledSql);
             }
         }
+        final String stackTrace = captureCallerStackTrace();
         PerfLoggerRemoting.postLog(new BatchedPreparedStatementsLog(connectionId, logId, now, rawSql, filledSqlList,
-                Thread.currentThread().getName(), timeout, autoCommit, transactionIsolation));
+                Thread.currentThread().getName(), timeout, autoCommit, transactionIsolation, stackTrace));
     }
 
     public static void logStatementExecuted(final UUID logId, final long durationNanos,
@@ -205,6 +209,24 @@ public class PerfLogger {
         }
         newSQLWithValues.append(preparedStatementSql.substring(lastReplacementIndex));
         return newSQLWithValues.toString();
+    }
+
+    private static String captureCallerStackTrace() {
+        final StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+        final StringBuilder sb = new StringBuilder();
+        // Skip first frames: getStackTrace, captureCallerStackTrace, logBeforeXxx, and internal proxy/driver frames
+        for (int i = 0; i < stackTrace.length; i++) {
+            final String className = stackTrace[i].getClassName();
+            if (className.startsWith("ch.sla.jdbcperflogger.")
+                    || className.startsWith("java.lang.Thread")
+                    || className.startsWith("sun.reflect.")
+                    || className.startsWith("java.lang.reflect.")
+                    || className.startsWith("com.sun.proxy.")) {
+                continue;
+            }
+            sb.append(stackTrace[i].toString()).append('\n');
+        }
+        return sb.toString();
     }
 
     static String getValueAsString(final SqlTypedValue sqlTypedValue, final DatabaseType databaseType) {

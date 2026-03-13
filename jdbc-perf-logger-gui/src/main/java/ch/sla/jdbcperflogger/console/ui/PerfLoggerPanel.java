@@ -51,6 +51,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
@@ -96,6 +97,7 @@ public class PerfLoggerPanel extends JPanel {
         COLUMNS_WIDTH.put(LogRepositoryConstants.AUTOCOMMIT_COLUMN, 40);
         COLUMNS_WIDTH.put(LogRepositoryConstants.TRANSACTION_ISOLATION_COLUMN, 50);
         COLUMNS_WIDTH.put(LogRepositoryConstants.ERROR_COLUMN, 0);
+        COLUMNS_WIDTH.put(LogRepositoryConstants.CLIENT_ID_COLUMN, 150);
     }
 
     private JTextField txtFldSqlFilter;
@@ -116,6 +118,8 @@ public class PerfLoggerPanel extends JPanel {
     private JTextField sqlClauseField;
     JTextField connectionPropertiesField;
     JTextField connectionCreationDurationField;
+    JTextField connectionClientIdField;
+    JTextArea txtFieldStackTrace;
     JLabel lblConnectionStatus;
 
     public PerfLoggerPanel(final PerfLoggerController perfLoggerController) {
@@ -585,6 +589,31 @@ public class PerfLoggerPanel extends JPanel {
         gbc_connectionPropertiesField.gridy = 2;
         panelConnectionInfo.add(connectionPropertiesField, gbc_connectionPropertiesField);
         connectionPropertiesField.setColumns(10);
+
+        final JLabel lblClientId = new JLabel("Client ID:");
+        final GridBagConstraints gbc_lblClientId = new GridBagConstraints();
+        gbc_lblClientId.anchor = GridBagConstraints.EAST;
+        gbc_lblClientId.insets = new Insets(0, 0, 0, 5);
+        gbc_lblClientId.gridx = 0;
+        gbc_lblClientId.gridy = 3;
+        panelConnectionInfo.add(lblClientId, gbc_lblClientId);
+
+        connectionClientIdField = new JTextField();
+        final GridBagConstraints gbc_connectionClientIdField = new GridBagConstraints();
+        gbc_connectionClientIdField.fill = GridBagConstraints.HORIZONTAL;
+        gbc_connectionClientIdField.gridwidth = 3;
+        gbc_connectionClientIdField.gridx = 1;
+        gbc_connectionClientIdField.gridy = 3;
+        panelConnectionInfo.add(connectionClientIdField, gbc_connectionClientIdField);
+        connectionClientIdField.setColumns(10);
+
+        final JPanel panelStackTrace = new JPanel();
+        tabbedPanelsqlDetails.addTab("Stack Trace", null, panelStackTrace, null);
+        panelStackTrace.setLayout(new java.awt.BorderLayout());
+        txtFieldStackTrace = new JTextArea();
+        txtFieldStackTrace.setEditable(false);
+        txtFieldStackTrace.setFont(new java.awt.Font("Monospaced", java.awt.Font.PLAIN, 12));
+        panelStackTrace.add(new JScrollPane(txtFieldStackTrace), java.awt.BorderLayout.CENTER);
 
         btnCopy2.addActionListener(e -> {
             final StringSelection stringSelection = new StringSelection(txtFieldFilledSql.getText());

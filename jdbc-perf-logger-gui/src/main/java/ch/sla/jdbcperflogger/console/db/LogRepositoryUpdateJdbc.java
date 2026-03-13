@@ -45,8 +45,7 @@ import ch.sla.jdbcperflogger.model.StatementLog;
 import ch.sla.jdbcperflogger.model.TxCompleteLog;
 
 public class LogRepositoryUpdateJdbc implements LogRepositoryUpdate {
-    // TODO ajouter colonne clientId (processId)
-    public static final int SCHEMA_VERSION = 7;
+    public static final int SCHEMA_VERSION = 8;
 
     static final int NB_ROWS_MAX = Integer.parseInt(System.getProperty("maxLoggedStatements", "20000"));
     private static final long CLEAN_UP_PERIOD_MS = TimeUnit.SECONDS.toMillis(30);
@@ -78,13 +77,13 @@ public class LogRepositoryUpdateJdbc implements LogRepositoryUpdate {
 
             addStatementLog = connectionUpdate
                     .prepareStatement("insert into statement_log (logId, tstamp, statementType, rawSql, filledSql, " //
-                            + "threadName, connectionId, timeout, autoCommit, transaction_Isolation)"//
-                            + " values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                            + "threadName, connectionId, timeout, autoCommit, transaction_Isolation, callerStackTrace)"//
+                            + " values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             addStatementLogWithAfterExecutionInfo = connectionUpdate
                     .prepareStatement("insert into statement_log (logId, tstamp, statementType, rawSql, filledSql, " //
                             + "threadName, connectionId, timeout, autoCommit, transaction_Isolation, executionDurationNanos, nbRows, " //
-                            + "fetchDurationNanos, rsetUsageDurationNanos, exception)"//
-                            + " values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                            + "fetchDurationNanos, rsetUsageDurationNanos, exception, callerStackTrace)"//
+                            + " values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             updateStatementLogWithResultSet = connectionUpdate.prepareStatement(
                     "update statement_log set fetchDurationNanos=?, rsetUsageDurationNanos=?, nbRows=? where logId=?");
             updateStatementLogAfterExecution = connectionUpdate.prepareStatement(
@@ -184,6 +183,7 @@ public class LogRepositoryUpdateJdbc implements LogRepositoryUpdate {
             addStatementLog.setInt(i++, log.getTimeout());
             addStatementLog.setBoolean(i++, log.isAutoCommit());
             addStatementLog.setInt(i++, log.getTransactionIsolation());
+            addStatementLog.setString(i++, log.getCallerStackTrace());
             final int insertCount = addStatementLog.executeUpdate();
             assert insertCount == 1;
         } catch (final SQLException e) {
@@ -214,6 +214,7 @@ public class LogRepositoryUpdateJdbc implements LogRepositoryUpdate {
                 addStatementLogWithAfterExecutionInfo.setObject(i++, log.getResultSetUsageDurationNanos(),
                         Types.BIGINT);
                 addStatementLogWithAfterExecutionInfo.setString(i++, log.getSqlException());
+                addStatementLogWithAfterExecutionInfo.setString(i++, log.getCallerStackTrace());
                 addStatementLogWithAfterExecutionInfo.addBatch();
             }
             addStatementLogWithAfterExecutionInfo.executeBatch();
@@ -276,6 +277,7 @@ public class LogRepositoryUpdateJdbc implements LogRepositoryUpdate {
             addStatementLog.setInt(i++, log.getTimeout());
             addStatementLog.setBoolean(i++, log.isAutoCommit());
             addStatementLog.setInt(i++, log.getTransactionIsolation());
+            addStatementLog.setString(i++, log.getCallerStackTrace());
             addStatementLog.executeUpdate();
 
             addBatchedStatementLog.setObject(1, log.getLogId());
@@ -306,6 +308,7 @@ public class LogRepositoryUpdateJdbc implements LogRepositoryUpdate {
             addStatementLog.setInt(i++, log.getTimeout());
             addStatementLog.setBoolean(i++, log.isAutoCommit());
             addStatementLog.setInt(i++, log.getTransactionIsolation());
+            addStatementLog.setString(i++, log.getCallerStackTrace());
             addStatementLog.executeUpdate();
 
             addBatchedStatementLog.setObject(1, log.getLogId());
@@ -327,8 +330,8 @@ public class LogRepositoryUpdateJdbc implements LogRepositoryUpdate {
         LOGGER.debug("addConnection:{}", connectionInfo);
         try (PreparedStatement stmt = connectionUpdate
                 .prepareStatement("merge into connection_info (connectionId, connectionNumber, url, creationDate, "//
-                        + "connectionCreationDurationNanos, connectionProperties)"//
-                        + " key(connectionId) values (?,?,?,?,?,?)")) {
+                        + "connectionCreationDurationNanos, connectionProperties, clientId)"//
+                        + " key(connectionId) values (?,?,?,?,?,?,?)")) {
             int i = 1;
             stmt.setObject(i++, connectionInfo.getUuid());
             stmt.setInt(i++, connectionInfo.getConnectionNumber());
@@ -336,6 +339,7 @@ public class LogRepositoryUpdateJdbc implements LogRepositoryUpdate {
             stmt.setTimestamp(i++, new Timestamp(connectionInfo.getCreationDate().getTime()));
             stmt.setLong(i++, connectionInfo.getConnectionCreationDuration());
             stmt.setObject(i++, connectionInfo.getConnectionProperties());
+            stmt.setString(i++, connectionInfo.getClientId());
 
             stmt.execute();
         } catch (final SQLException e) {

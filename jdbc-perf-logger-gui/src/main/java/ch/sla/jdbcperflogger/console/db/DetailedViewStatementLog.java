@@ -22,10 +22,17 @@ public class DetailedViewStatementLog {
     @Nullable
     private final String sqlException;
     private final ConnectionInfo connectionInfo;
+    private final String callerStackTrace;
 
     public DetailedViewStatementLog(final UUID logId, final ConnectionInfo connectionInfo, final long timestamp,
             @Nullable final StatementType statementType, final String rawSql, final String filledSql,
             final String threadName, @Nullable final String exception) {
+        this(logId, connectionInfo, timestamp, statementType, rawSql, filledSql, threadName, exception, "");
+    }
+
+    public DetailedViewStatementLog(final UUID logId, final ConnectionInfo connectionInfo, final long timestamp,
+            @Nullable final StatementType statementType, final String rawSql, final String filledSql,
+            final String threadName, @Nullable final String exception, final String callerStackTrace) {
         this.logId = logId;
         this.connectionInfo = connectionInfo;
         this.timestamp = timestamp;
@@ -34,6 +41,7 @@ public class DetailedViewStatementLog {
         this.filledSql = filledSql;
         this.threadName = threadName;
         sqlException = exception;
+        this.callerStackTrace = callerStackTrace;
     }
 
 }

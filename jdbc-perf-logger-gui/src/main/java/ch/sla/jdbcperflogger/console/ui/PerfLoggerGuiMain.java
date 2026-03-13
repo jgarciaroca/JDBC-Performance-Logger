@@ -114,9 +114,9 @@ public class PerfLoggerGuiMain implements IClientConnectionDelegate {
         final PerfLoggerController serverPerfLoggerController = createServer(4561);
         frmJdbcPerformanceLogger.addTab("*:4561", serverPerfLoggerController.getPanel());
 
-        frmJdbcPerformanceLogger.pack();
-        frmJdbcPerformanceLogger.setExtendedState(Frame.MAXIMIZED_BOTH);
         frmJdbcPerformanceLogger.setMinimumSize(new Dimension(600, 500));
+        frmJdbcPerformanceLogger.setSize(new Dimension(1024, 700));
+        frmJdbcPerformanceLogger.setLocationRelativeTo(null);
 
     }
 

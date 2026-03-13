@@ -358,6 +358,11 @@ public class PerfLoggerController {
         perfLoggerPanel.connectionCreationDurationField
                 .setText(connectionCreationDurationMillis != null ? connectionCreationDurationMillis.toString() : "");
         perfLoggerPanel.connectionPropertiesField.setText(connectionPropertiesString);
+        perfLoggerPanel.connectionClientIdField.setText(
+                statementLog != null ? statementLog.getConnectionInfo().getClientId() : "");
+        perfLoggerPanel.txtFieldStackTrace.setText(
+                statementLog != null ? statementLog.getCallerStackTrace() : "");
+        perfLoggerPanel.txtFieldStackTrace.setCaretPosition(0);
 
         perfLoggerPanel.setDeltaTimestampBaseMillis(deltaTimestampBaseMillis);
     }

@@ -36,6 +36,14 @@ public class BatchedNonPreparedStatementsLog extends AbstractBeforeStatementExec
         this.sqlList = Collections.unmodifiableList(new ArrayList<String>(sqlList));
     }
 
+    public BatchedNonPreparedStatementsLog(final UUID connectionId, final UUID logId, final long timestamp,
+            final List<String> sqlList, final String threadName, final int timeout, final boolean autoCommit,
+            final int transactionIsolation, final String callerStackTrace) {
+        super(connectionId, logId, timestamp, StatementType.NON_PREPARED_BATCH_EXECUTION, threadName, timeout,
+                autoCommit, transactionIsolation, callerStackTrace);
+        this.sqlList = Collections.unmodifiableList(new ArrayList<String>(sqlList));
+    }
+
     public List<String> getSqlList() {
         return sqlList;
     }
